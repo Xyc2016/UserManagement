@@ -16,7 +16,7 @@ def get_dict_from_POST(post) -> dict:
 def only_super_user_is_allowed(request: HttpRequest):
     return JsonResponse({
         'msg': 'Only superuser is allowed.'
-    }, 400)
+    }, status=400)
 
 
 def get_and_set_cookie(request: HttpRequest):
@@ -43,10 +43,10 @@ def user_info(request: HttpRequest):
 
 
 @user_passes_test(test_func=lambda user: user.is_superuser, login_url='only_superuser_is_allowed')
-def all_username_and_ids(request: HttpRequest):
+def user_infos(request: HttpRequest):
     return JsonResponse({
-        'allUserNameAndIds': [
-            {'username': user.username, 'id': user.id} for user in User.objects.all()
+        'userInfos': [
+            {'username': user.username, 'id': user.id, 'isSuperUser': user.is_superuser} for user in User.objects.all()
         ]
     })
 
@@ -82,30 +82,29 @@ def log_out(request: HttpRequest):
     })
 
 
+@user_passes_test(test_func=lambda user: user.is_superuser, login_url='only_superuser_is_allowed')
 def register(request: HttpRequest):
-    # user: User = request.user
-    # if not user.is_superuser:
-    #     return JsonResponse({
-    #         'msg': 'Only superusers are allowed to add user.',
-    #     }, status=400)
     o = get_dict_from_POST(request.POST)
     username = o.get('username')
+
     password = o.get('password')
     register_as_super_user = o.get('registerAsSuperUser')
     if User.objects.filter(username=username):
         return JsonResponse({
             'msg': 'The name is occupied,try another',
+            'userNameExists': True,
         })
     if register_as_super_user:
         user: User = User.objects.create_superuser(
             username=username, password=password)
     else:
-        user: User = User.objects.create_superuser(
+        user: User = User.objects.create_user(
             username=username, password=password)
     user.save()
     return JsonResponse({
         'msg': 'User added.',
-        'username': user.username
+        'username': user.username,
+        'isUserAdded': True,
     })
 
 
@@ -113,7 +112,7 @@ def delete_user(request: HttpRequest):
     if request.method != 'POST':
         return JsonResponse({
             'msg': 'Only POST is allowed.'
-        }, 400)
+        }, status=400)
     d = get_dict_from_POST(request.POST)
     _id = d.get('idOfUserToDelete')
     user: User = User.objects.filter(id=_id)
