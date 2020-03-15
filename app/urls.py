@@ -10,5 +10,6 @@ urlpatterns = [
          name='user_infos'),
     path('only_superuser_is_allowed', views.only_super_user_is_allowed,
          name='only_superuser_is_allowed'),
-    path('delete_user', views.delete_user, name='delete_user')
+    path('delete_user', views.delete_user, name='delete_user'),
+    path('get_data', views.get_data, name='get_data'),
 ]

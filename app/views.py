@@ -3,8 +3,11 @@ from django.http import HttpRequest, JsonResponse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
+import requests
+import threading
 # Create your views here.
 from datetime import datetime
+import time
 import json
 
 
@@ -126,3 +129,10 @@ def delete_user(request: HttpRequest):
         return JsonResponse({
             'msg': 'Failed.'
         })
+
+
+def get_data(request: HttpRequest):
+    time.sleep(0.15)
+    return JsonResponse({
+        'dateTime': str(datetime.now())+'?'
+    })
